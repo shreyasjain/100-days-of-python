@@ -29,6 +29,13 @@ class Snake:
         t.goto(position)
         self.segments.append(t)
 
+    def reset(self):
+        for segment in self.segments:
+            segment.hideturtle()
+        self.segments=[]
+        self.create_snake()
+        self.head = self.segments[0]
+
     def move(self):
         for i in range(len(self.segments) - 1, 0, -1):
             prev_segment_position = self.segments[i - 1].position()
