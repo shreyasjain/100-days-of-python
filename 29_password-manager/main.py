@@ -1,6 +1,27 @@
+import json
 import random
 from tkinter import *
 from tkinter import messagebox
+
+
+# ---------------------------- SEARCH WEBSITE ------------------------------- #
+
+def search_website():
+    website = website_input.get()
+
+    with open('data.json', 'r') as file:
+        data = json.load(file)
+
+        try:
+            website_info = data[website]
+        except FileNotFoundError:
+            messagebox.showerror("Not Found!", "Data file not found.")
+        except KeyError:
+            messagebox.showerror("Not Found!", "Request website info not found.")
+        else:
+            email = website_info['email']
+            password = website_info['password']
+            messagebox.showinfo(f"{website}", f"Username: {email}\nPassword: {password}")
 
 
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
@@ -13,15 +34,16 @@ def generate_password():
     password = ''
 
     for _ in range(LEN):
-        password+=random.choice(letters)
+        password += random.choice(letters)
 
     for _ in range(LEN):
-        password+=random.choice(symbols)
+        password += random.choice(symbols)
 
     for _ in range(LEN):
-        password+=random.choice(numbers)
+        password += random.choice(numbers)
 
     password_input.insert(0, password)
+
 
 # ---------------------------- SAVE PASSWORD ------------------------------- #
 
@@ -30,19 +52,50 @@ def add_details():
     u = username_input.get()
     p = password_input.get()
 
-    if len(w)==0 or len(u)==0 or len(p)==0:
+    if len(w) == 0 or len(u) == 0 or len(p) == 0:
         return messagebox.showerror("Attention", "Please dont leave any field empty !")
 
-    acknowledged =messagebox.askokcancel("Success",
-                           f"Are you sure to save these details:\nWebsite: {w}\nUsername: {u}\nPassword: {p}.")
+    acknowledged = messagebox.askokcancel("Attention!",
+                                          f"Are you sure to save these details:\nWebsite: {w}\nUsername: {u}\nPassword: {p}.")
 
     if acknowledged:
-        with open('data.txt', 'a') as file:
-            file.write(f"Website: {w} | UserName: {u} | Password:{p}\n")
+        # In a text file
+        # with open('data.txt', 'a') as file:
+        #     file.write(f"Website: {w} | UserName: {u} | Password:{p}\n")
+        #
+        # website_input.delete(0, len(w))
+        # # username_input.delete(0, len(u))
+        # password_input.delete(0, len(p))
 
-        website_input.delete(0, len(w))
-        # username_input.delete(0, len(u))
-        password_input.delete(0, len(p))
+        # In a JSON file
+        new_data = {
+            w: {
+                'email': u,
+                'password': p
+            }
+        }
+
+        def add_or_update(new_data):
+            try:
+                # Read
+                with open('data.json', 'r') as file:
+                    data = json.load(file)
+
+            except FileNotFoundError:
+                with open('data.json', 'w') as file:
+                    json.dump(new_data, file, indent=4)
+
+            else:
+                data.update(new_data)
+                with open('data.json', 'w') as file:
+                    json.dump(data, file, indent=4)
+
+            finally:
+                website_input.delete(0, len(w))
+                # username_input.delete(0, len(u))
+                password_input.delete(0, len(p))
+
+        add_or_update(new_data)
 
 
 # ---------------------------- UI SETUP ------------------------------- #
@@ -61,8 +114,11 @@ canvas.grid(row=0, column=0, columnspan=3)
 website_label = Label(text="Website:")
 website_label.grid(padx=5, pady=5, row=1, column=0)
 
-website_input = Entry(justify='left', name="website-input", width=42)
-website_input.grid(padx=5, pady=5, row=1, column=1, columnspan=2)
+website_input = Entry(justify='left', name="website-input", width=21)
+website_input.grid(padx=5, pady=5, row=1, column=1)
+
+search_button = Button(text='Search', width=14, command=search_website)
+search_button.grid(padx=5, pady=5, row=1, column=2)
 
 username_label = Label(text="Username:")
 username_label.grid(padx=5, pady=5, row=2, column=0)
